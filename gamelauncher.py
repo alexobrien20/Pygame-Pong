@@ -1,11 +1,14 @@
 import pygame
 import random
+import time
 from pygame.locals import *
 from random import randint
 import sys
 
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
+
+NUMBER_OF_GAMES = 10
 
 clock = pygame.time.Clock()
 
@@ -51,39 +54,95 @@ class Ball(pygame.sprite.Sprite):
         pygame.draw.circle(surface,(0,255,0),self.rect.center,10)
 
     def move(self,ball_direction_x,ball_direction_y):
-        if self.rect.left <= 0:
-            print("Right")
+        if self.rect.left <= 14: ##If the ball is behind the width of the paddle, then its unreturnable and the score should be updated
             winner = "Right"
             return winner
-        if self.rect.right >= SCREEN_WIDTH:
-            print("Left")
+        if self.rect.right >= SCREEN_WIDTH - 14 :
             winner = "Left"
             return winner
         if self.rect.top <= 0:
-            self.rect.move_ip(ball_direction_x*3,-ball_direction_y*6) 
+            self.rect.move_ip(ball_direction_x*3,-ball_direction_y*4) 
             ball_direction_y = -ball_direction_y
             return ball_direction_y
         if self.rect.bottom >= SCREEN_HEIGHT:
-            self.rect.move_ip(ball_direction_x*3,-ball_direction_y*6)
+            self.rect.move_ip(ball_direction_x*3,-ball_direction_y*4)
             ball_direction_y = -ball_direction_y
             return ball_direction_y
         else:
-            self.rect.move_ip(ball_direction_x*3,ball_direction_y*6)
+            self.rect.move_ip(ball_direction_x*3,ball_direction_y*4)
             return ball_direction_y
 
     def return_ball(self,ball_direction_x,ball_direction_y):
-        self.rect.move_ip(-ball_direction_x*3,ball_direction_y*6)
-        ball_direction_x = -ball_direction_x
+        try:
+            self.rect.move_ip(-ball_direction_x*3,ball_direction_y*6)
+            ball_direction_x = -ball_direction_x
+        except TypeError as message:
+            print(message)
+            print(ball_direction_x)
+            print(ball_direction_y)
         return ball_direction_x
 
 def draw_text(surf,text,size,x,y,font_name):
-    font = pygame.font.Font(font_name,size)
-    text_surface = font.render(text,True,(0,255,0))
+    #font = pygame.font.Font(font_name,size)
+    text_surface = font_name.render(text,True,(255,0,0))
     text_rect = text_surface.get_rect()
     text_rect.midtop = (x,y)
     surf.blit(text_surface,text_rect)
 
-def RunTwoPlayer(number_of_games):
+def DisplayScores(scores,final_score=False):
+    clock.tick(25)
+    screen = pygame.display.set_mode([SCREEN_WIDTH,SCREEN_HEIGHT])
+    background_surface = pygame.image.load("twoplayerbackground.jpg")
+    screen.blit(background_surface,background_surface.get_rect())
+    start_time = time.time()
+    end_time = start_time + 5 ##Want the scores to be shown for 10 seconds
+    dt = 0
+
+    player_1_score = scores["Left"]
+    player_2_score = scores["Right"]
+
+    font_name = pygame.font.Font("Molot.ttf",170)
+    iters = 0
+    pygame.display.update()  
+
+    pygame.time.Clock()
+    running = True
+    if(final_score == False):
+        while running:
+            while(start_time < end_time):
+                iters += 1
+                for event in pygame.event.get():
+                    if event.type == KEYDOWN:
+                        if event.key == K_ESCAPE:
+                            running = False
+                    if event.type == pygame.QUIT:
+                        running = False
+                        pygame.quit()
+                        sys.exit()
+
+                draw_text(screen,str(player_1_score),170,SCREEN_WIDTH*0.25,SCREEN_HEIGHT/3,font_name)       
+                draw_text(screen,str(player_2_score),170,SCREEN_WIDTH*0.75,SCREEN_HEIGHT/3,font_name)    
+                pygame.display.update()   
+                dt = clock.tick(25) / 1000
+                start_time += dt
+            running = False
+        return 0
+    else:
+        while running:
+            for event in pygame.event.get():
+                if event.type == KEYDOWN:
+                    if event.key == K_ESCAPE:
+                        running = False
+                if event.type == pygame.QUIT:
+                    running = False
+                    pygame.quit()
+                    sys.exit()
+
+            draw_text(screen,str(player_1_score),170,SCREEN_WIDTH*0.25,SCREEN_HEIGHT/3,font_name)       
+            draw_text(screen,str(player_2_score),170,SCREEN_WIDTH*0.75,SCREEN_HEIGHT/3,font_name)    
+            pygame.display.update()   
+
+def RunTwoPlayer():
     screen = pygame.display.set_mode([SCREEN_WIDTH,SCREEN_HEIGHT])
     background_surface = pygame.image.load("twoplayerbackground.jpg")
     screen.blit(background_surface,background_surface.get_rect())
@@ -104,38 +163,38 @@ def RunTwoPlayer(number_of_games):
     #player_2 = Paddle(SCREEN_WIDTH - 10)
     pygame.display.update()
 
-    for i in range(number_of_games):
-        running = True
-        scores = {"Right" : 0, "Left" : 0}
-        while running:
-            background_surface = pygame.image.load("twoplayerbackground.jpg")
-            screen.blit(background_surface,background_surface.get_rect())
-            for event in pygame.event.get():
-                if event.type == KEYDOWN:
-                    if event.key == K_ESCAPE:
-                        running = False
-                if event.type == pygame.QUIT:
+    running = True
+    scores = {"Right" : 0, "Left" : 0}
+    while running:
+        background_surface = pygame.image.load("twoplayerbackground.jpg")
+        screen.blit(background_surface,background_surface.get_rect())
+        for event in pygame.event.get():
+            if event.type == KEYDOWN:
+                if event.key == K_ESCAPE:
                     running = False
+                    RunGame()
+            if event.type == pygame.QUIT:
+                running = False
+                pygame.quit()
+                sys.exit()
 
-            ball_direction_y = ball.move(ball_direction_x,ball_direction_y)
-            if(pygame.sprite.spritecollideany(ball,player_sprites)):
-                ball_direction_x = ball.return_ball(ball_direction_x,ball_direction_y)
-            if(ball_direction_y == "Left"):
-                print("Left scored the point")
-                scores["Left"] += 1
-                break
-            elif(ball_direction_y == "Right"):
-                print("Right scored the point")
-                scores["Right"] += 1
-                break
-            player_1.move("Left")
-            player_2.move("Right")
+        ball_direction_y = ball.move(ball_direction_x,ball_direction_y)
+        if(pygame.sprite.spritecollideany(ball,player_sprites)):
+            ball_direction_x = ball.return_ball(ball_direction_x,ball_direction_y)
+        if(ball_direction_y == "Left"):
+            scores["Left"] += 1
+            running = False
+        elif(ball_direction_y == "Right"):
+            scores["Right"] += 1
+            running = False
+        player_1.move("Left")
+        player_2.move("Right")
 
-            ball.draw(screen)
-            player_1.draw(screen)
-            player_2.draw(screen)
+        ball.draw(screen)
+        player_1.draw(screen)
+        player_2.draw(screen)
 
-            pygame.display.update()
+        pygame.display.update()
 
     return scores
 
@@ -178,16 +237,20 @@ def RunGame(click=False):
             if click:
                 ##Go on to single player
                 print("You selected single player")
-                num_of_games = 3
-                scores = RunTwoPlayer(num_of_games)
-                print(scores)
-                RunGame()
+                pass
         if two_player_button.collidepoint((mx,my)):
             screen.blit(two_player_button_hover,two_player_button)
             if click:
-                ##Go on lan 2 player
-                print("You selected lan 2 player")
-                pass
+                total_scores = {"Right" : 0, "Left" : 0}
+                for i in range(NUMBER_OF_GAMES):
+                    scores = RunTwoPlayer()
+                    total_scores["Right"] += scores["Right"]
+                    total_scores["Left"] += scores["Left"]
+                    if(i == NUMBER_OF_GAMES - 1):
+                        DisplayScores(total_scores,final_score=True)
+                    else:
+                        DisplayScores(total_scores)
+                RunGame()
         if multiplayer_button.collidepoint((mx,my)):
             screen.blit(multiplayer_button_hover,multiplayer_button)
             if click:
