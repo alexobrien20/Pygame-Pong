@@ -8,7 +8,7 @@ import sys
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
 
-NUMBER_OF_GAMES = 10
+NUMBER_OF_GAMES = 2
 
 clock = pygame.time.Clock()
 
@@ -82,15 +82,16 @@ class Ball(pygame.sprite.Sprite):
             print(ball_direction_y)
         return ball_direction_x
 
-def draw_text(surf,text,size,x,y,font_name):
-    #font = pygame.font.Font(font_name,size)
+def draw_text(surf,text,size,x,y):
+    font_name = pygame.font.Font("Molot.ttf",size)
     text_surface = font_name.render(text,True,(255,0,0))
     text_rect = text_surface.get_rect()
     text_rect.midtop = (x,y)
     surf.blit(text_surface,text_rect)
 
-def DisplayScores(scores,final_score=False):
+def DisplayScores(scores,number_of_games,final_score=False):
     clock.tick(25)
+    number_of_games_text = f'Best of {number_of_games}'
     screen = pygame.display.set_mode([SCREEN_WIDTH,SCREEN_HEIGHT])
     background_surface = pygame.image.load("twoplayerbackground.jpg")
     screen.blit(background_surface,background_surface.get_rect())
@@ -101,8 +102,9 @@ def DisplayScores(scores,final_score=False):
     player_1_score = scores["Left"]
     player_2_score = scores["Right"]
 
-    font_name = pygame.font.Font("Molot.ttf",170)
-    iters = 0
+
+    draw_text(screen,number_of_games_text,110,SCREEN_WIDTH/2,-20)   
+
     pygame.display.update()  
 
     pygame.time.Clock()
@@ -110,18 +112,18 @@ def DisplayScores(scores,final_score=False):
     if(final_score == False):
         while running:
             while(start_time < end_time):
-                iters += 1
-                for event in pygame.event.get():
+                for event in pygame.event.get()
                     if event.type == KEYDOWN:
                         if event.key == K_ESCAPE:
                             running = False
+                            RunGame()
                     if event.type == pygame.QUIT:
                         running = False
                         pygame.quit()
                         sys.exit()
 
-                draw_text(screen,str(player_1_score),170,SCREEN_WIDTH*0.25,SCREEN_HEIGHT/3,font_name)       
-                draw_text(screen,str(player_2_score),170,SCREEN_WIDTH*0.75,SCREEN_HEIGHT/3,font_name)    
+                draw_text(screen,str(player_1_score),170,SCREEN_WIDTH*0.25,SCREEN_HEIGHT/3)       
+                draw_text(screen,str(player_2_score),170,SCREEN_WIDTH*0.75,SCREEN_HEIGHT/3)    
                 pygame.display.update()   
                 dt = clock.tick(25) / 1000
                 start_time += dt
@@ -138,8 +140,19 @@ def DisplayScores(scores,final_score=False):
                     pygame.quit()
                     sys.exit()
 
-            draw_text(screen,str(player_1_score),170,SCREEN_WIDTH*0.25,SCREEN_HEIGHT/3,font_name)       
-            draw_text(screen,str(player_2_score),170,SCREEN_WIDTH*0.75,SCREEN_HEIGHT/3,font_name)    
+            if(player_1_score > player_2_score):
+                winner_text = 'The Winner is Left!'
+                draw_text(screen,winner_text,70,SCREEN_WIDTH*0.5,SCREEN_HEIGHT*0.85)
+            elif(player_1_score < player_2_score):
+                winner_text = 'The Winner is Right!'
+                draw_text(screen,winner_text,70,SCREEN_WIDTH*0.5,SCREEN_HEIGHT*0.85) 
+            else:
+                winner_text = "Its a Draw!"
+                draw_text(screen,winner_text,70,SCREEN_WIDTH*0.5,SCREEN_HEIGHT*0.85) 
+
+
+            draw_text(screen,str(player_1_score),170,SCREEN_WIDTH*0.25,SCREEN_HEIGHT/3)       
+            draw_text(screen,str(player_2_score),170,SCREEN_WIDTH*0.75,SCREEN_HEIGHT/3)    
             pygame.display.update()   
 
 def RunTwoPlayer():
@@ -200,7 +213,6 @@ def RunTwoPlayer():
 
 def RunGame(click=False):
     pygame.init()
-    font_name = pygame.font.match_font('helvetica')
     screen = pygame.display.set_mode([SCREEN_WIDTH,SCREEN_HEIGHT])
     background_surface = pygame.image.load("background.jpg")
     screen.blit(background_surface,background_surface.get_rect())
@@ -247,9 +259,9 @@ def RunGame(click=False):
                     total_scores["Right"] += scores["Right"]
                     total_scores["Left"] += scores["Left"]
                     if(i == NUMBER_OF_GAMES - 1):
-                        DisplayScores(total_scores,final_score=True)
+                        DisplayScores(total_scores,NUMBER_OF_GAMES,final_score=True)
                     else:
-                        DisplayScores(total_scores)
+                        DisplayScores(total_scores,NUMBER_OF_GAMES)
                 RunGame()
         if multiplayer_button.collidepoint((mx,my)):
             screen.blit(multiplayer_button_hover,multiplayer_button)
