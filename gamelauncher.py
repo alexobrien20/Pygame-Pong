@@ -20,6 +20,7 @@ class Paddle(pygame.sprite.Sprite):
             center=(x,SCREEN_HEIGHT/2)
         )
         self.image.fill((0,0,0))
+
     def draw(self,surface):
         surface.blit(self.image,self.rect)
 
@@ -112,7 +113,7 @@ def DisplayScores(scores,number_of_games,final_score=False):
     if(final_score == False):
         while running:
             while(start_time < end_time):
-                for event in pygame.event.get()
+                for event in pygame.event.get():
                     if event.type == KEYDOWN:
                         if event.key == K_ESCAPE:
                             running = False
@@ -154,6 +155,70 @@ def DisplayScores(scores,number_of_games,final_score=False):
             draw_text(screen,str(player_1_score),170,SCREEN_WIDTH*0.25,SCREEN_HEIGHT/3)       
             draw_text(screen,str(player_2_score),170,SCREEN_WIDTH*0.75,SCREEN_HEIGHT/3)    
             pygame.display.update()   
+
+def RunTwoPlayerSettings():
+    screen = pygame.display.set_mode([SCREEN_WIDTH,SCREEN_HEIGHT])
+
+    paddle_speed_text = "Paddle Speed"
+    ball_speed_text = "Ball Speed"
+    number_of_games_text = "Num. of Games"
+
+    user_paddle_speed_input = ''
+    user_ball_speed_input = ''
+    user_number_of_games_input = ''
+
+    paddle_speed_button = pygame.Rect((150,175,150,75))
+    ball_speed_button = pygame.Rect((500,175,150,75))
+    number_of_games_button = pygame.Rect((150,400,150,75))
+
+    colour = ((255,255,255))
+
+    paddle_speed_active = False
+    ball_speed_active = False
+    number_of_games_active = False
+
+    running = True
+
+    while running:
+        background_surface = pygame.image.load("twoplayerbackground.jpg")
+        screen.blit(background_surface,background_surface.get_rect())
+
+        draw_text(screen,paddle_speed_text,40,230,100)
+        draw_text(screen,ball_speed_text,40,545,100)
+        draw_text(screen,number_of_games_text,40,230,325)
+
+        pygame.draw.rect(screen,colour,paddle_speed_button,2)
+        pygame.draw.rect(screen,colour,ball_speed_button,2)
+        pygame.draw.rect(screen,colour,number_of_games_button,2)
+
+        for event in pygame.event.get():
+            if event.type == KEYDOWN:
+                if event.key == K_ESCAPE:
+                    running = False
+                    RunGame()
+            if event.type == pygame.QUIT:
+                running = False
+                pygame.quit()
+                sys.exit()
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if paddle_speed_button.collidepoint(event.pos):
+                    paddle_speed_active = True
+                else:
+                    paddle_speed_active = False
+            if(event.type == pygame.KEYDOWN):
+                if paddle_speed_active == True:
+                    if event.key == K_BACKSPACE:
+                        user_paddle_speed_input = user_paddle_speed_input[:-1]
+                    elif event.key == K_RETURN:
+                        paddle_speed_active = False
+                    else:
+                        user_paddle_speed_input += event.unicode     
+        base_font = pygame.font.Font("Molot.ttf",75)
+        text_surface = base_font.render(user_paddle_speed_input,True,(255,255,255))
+        screen.blit(text_surface,(paddle_speed_button.x + 35,paddle_speed_button.y -5 ))
+
+        pygame.display.update()
+
 
 def RunTwoPlayer():
     screen = pygame.display.set_mode([SCREEN_WIDTH,SCREEN_HEIGHT])
@@ -253,6 +318,7 @@ def RunGame(click=False):
         if two_player_button.collidepoint((mx,my)):
             screen.blit(two_player_button_hover,two_player_button)
             if click:
+                RunTwoPlayerSettings()
                 total_scores = {"Right" : 0, "Left" : 0}
                 for i in range(NUMBER_OF_GAMES):
                     scores = RunTwoPlayer()
