@@ -3,92 +3,16 @@ import random
 import time
 from pygame.locals import *
 from random import randint
+from PongSprites import Paddle, Ball
+from Utilities import text_input_box,draw_text
 import sys
 
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
 
-NUMBER_OF_GAMES = 2
+number_of_games = 5 #The default number of games if non is picked
 
 clock = pygame.time.Clock()
-
-class Paddle(pygame.sprite.Sprite):
-    def __init__(self,x):
-        super(Paddle,self).__init__()
-        self.image = pygame.Surface((10,50))
-        self.rect = self.image.get_rect(
-            center=(x,SCREEN_HEIGHT/2)
-        )
-        self.image.fill((0,0,0))
-
-    def draw(self,surface):
-        surface.blit(self.image,self.rect)
-
-    def move(self,side):
-        pressed_keys = pygame.key.get_pressed()
-        if(side == "Right"):
-            if(pressed_keys[K_UP]):
-                self.rect.move_ip(0,-5)
-            if(pressed_keys[K_DOWN]):
-                self.rect.move_ip(0,5)
-        elif(side == "Left"):
-            if(pressed_keys[K_w]):
-                self.rect.move_ip(0,-5)
-            if(pressed_keys[K_s]):
-                self.rect.move_ip(0,5)
-
-        if self.rect.top <= 0:
-            self.rect.top = 0
-        if self.rect.bottom >= SCREEN_HEIGHT:
-            self.rect.bottom = SCREEN_HEIGHT
-
-
-class Ball(pygame.sprite.Sprite):
-    def __init__(self):
-        super(Ball,self).__init__()
-        self.image = pygame.Surface((20,20))
-        self.rect = self.image.get_rect(
-            center=((int(SCREEN_WIDTH/2),int(SCREEN_HEIGHT/2)))
-        )
-
-    def draw(self,surface):
-        pygame.draw.circle(surface,(0,255,0),self.rect.center,10)
-
-    def move(self,ball_direction_x,ball_direction_y):
-        if self.rect.left <= 14: ##If the ball is behind the width of the paddle, then its unreturnable and the score should be updated
-            winner = "Right"
-            return winner
-        if self.rect.right >= SCREEN_WIDTH - 14 :
-            winner = "Left"
-            return winner
-        if self.rect.top <= 0:
-            self.rect.move_ip(ball_direction_x*3,-ball_direction_y*4) 
-            ball_direction_y = -ball_direction_y
-            return ball_direction_y
-        if self.rect.bottom >= SCREEN_HEIGHT:
-            self.rect.move_ip(ball_direction_x*3,-ball_direction_y*4)
-            ball_direction_y = -ball_direction_y
-            return ball_direction_y
-        else:
-            self.rect.move_ip(ball_direction_x*3,ball_direction_y*4)
-            return ball_direction_y
-
-    def return_ball(self,ball_direction_x,ball_direction_y):
-        try:
-            self.rect.move_ip(-ball_direction_x*3,ball_direction_y*6)
-            ball_direction_x = -ball_direction_x
-        except TypeError as message:
-            print(message)
-            print(ball_direction_x)
-            print(ball_direction_y)
-        return ball_direction_x
-
-def draw_text(surf,text,size,x,y):
-    font_name = pygame.font.Font("Molot.ttf",size)
-    text_surface = font_name.render(text,True,(255,0,0))
-    text_rect = text_surface.get_rect()
-    text_rect.midtop = (x,y)
-    surf.blit(text_surface,text_rect)
 
 def DisplayScores(scores,number_of_games,final_score=False):
     clock.tick(25)
@@ -162,20 +86,22 @@ def RunTwoPlayerSettings():
     paddle_speed_text = "Paddle Speed"
     ball_speed_text = "Ball Speed"
     number_of_games_text = "Num. of Games"
+    start_game_text = "Start"
 
-    user_paddle_speed_input = ''
-    user_ball_speed_input = ''
-    user_number_of_games_input = ''
+    ball_speed_button = text_input_box(150,175,150,75,ball_speed_text,SCREEN_WIDTH,SCREEN_HEIGHT)
+    paddle_speed_button = text_input_box(500,175,150,75,paddle_speed_text,SCREEN_WIDTH,SCREEN_HEIGHT)
+    number_of_games_button = text_input_box(150,400,150,75,number_of_games_text,SCREEN_WIDTH,SCREEN_HEIGHT)
 
-    paddle_speed_button = pygame.Rect((150,175,150,75))
-    ball_speed_button = pygame.Rect((500,175,150,75))
-    number_of_games_button = pygame.Rect((150,400,150,75))
+    all_buttons = [ball_speed_button,paddle_speed_button,number_of_games_button]
 
-    colour = ((255,255,255))
+    start_game_font = pygame.font.Font("Molot.ttf",75)
+    start_game_surface = start_game_font.render(start_game_text,True,(255,255,255))
 
-    paddle_speed_active = False
-    ball_speed_active = False
-    number_of_games_active = False
+    start_game_button = start_game_surface.get_rect()
+    start_game_button.center = (550,400)
+    screen.blit(start_game_surface,start_game_button)
+
+    pygame.display.update()
 
     running = True
 
@@ -183,13 +109,7 @@ def RunTwoPlayerSettings():
         background_surface = pygame.image.load("twoplayerbackground.jpg")
         screen.blit(background_surface,background_surface.get_rect())
 
-        draw_text(screen,paddle_speed_text,40,230,100)
-        draw_text(screen,ball_speed_text,40,545,100)
-        draw_text(screen,number_of_games_text,40,230,325)
-
-        pygame.draw.rect(screen,colour,paddle_speed_button,2)
-        pygame.draw.rect(screen,colour,ball_speed_button,2)
-        pygame.draw.rect(screen,colour,number_of_games_button,2)
+        mx,my = pygame.mouse.get_pos()
 
         for event in pygame.event.get():
             if event.type == KEYDOWN:
@@ -200,34 +120,35 @@ def RunTwoPlayerSettings():
                 running = False
                 pygame.quit()
                 sys.exit()
+            for button in all_buttons:
+                button.handle_event(event)
+            if start_game_button.collidepoint((mx,my)):
+                start_game_surface = start_game_font.render(start_game_text,True,(255,110,0))
+            else:
+                start_game_surface = start_game_font.render(start_game_text,True,(255,255,255))
             if event.type == pygame.MOUSEBUTTONDOWN:
-                if paddle_speed_button.collidepoint(event.pos):
-                    paddle_speed_active = True
-                else:
-                    paddle_speed_active = False
-            if(event.type == pygame.KEYDOWN):
-                if paddle_speed_active == True:
-                    if event.key == K_BACKSPACE:
-                        user_paddle_speed_input = user_paddle_speed_input[:-1]
-                    elif event.key == K_RETURN:
-                        paddle_speed_active = False
+                if start_game_button.collidepoint(event.pos):
+                    errors = [button.error_message for button in all_buttons]
+                    if errors[0] == '' and errors[1] == '' and errors[2] == '':
+                        return ball_speed_button.user_input,paddle_speed_button.user_input,number_of_games_button.user_input
                     else:
-                        user_paddle_speed_input += event.unicode     
-        base_font = pygame.font.Font("Molot.ttf",75)
-        text_surface = base_font.render(user_paddle_speed_input,True,(255,255,255))
-        screen.blit(text_surface,(paddle_speed_button.x + 35,paddle_speed_button.y -5 ))
+                        return 5,5,10 ##Returns the default speeds if the user hasn't entered the settings correctly.
+        screen.blit(start_game_surface,start_game_button)
+
+
+        for button in all_buttons:
+            button.draw(screen)
 
         pygame.display.update()
-
-
-def RunTwoPlayer():
+    
+def RunTwoPlayer(ball_speed_input=5,paddle_speed_input=5,number_of_games_input=5): ##These are the default values if the user dosn't enter the settings correctly
     screen = pygame.display.set_mode([SCREEN_WIDTH,SCREEN_HEIGHT])
     background_surface = pygame.image.load("twoplayerbackground.jpg")
     screen.blit(background_surface,background_surface.get_rect())
 
-    player_1 = Paddle(10)
-    player_2 = Paddle(SCREEN_WIDTH - 10)
-    ball = Ball()
+    player_1 = Paddle(10,paddle_speed_input,SCREEN_HEIGHT)
+    player_2 = Paddle(SCREEN_WIDTH - 10,paddle_speed_input,SCREEN_HEIGHT)
+    ball = Ball(ball_speed_input,SCREEN_WIDTH,SCREEN_HEIGHT)
 
     ##If the direction is -1 then the ball goes left and vice versa
     directions = [-1,1]
@@ -237,9 +158,12 @@ def RunTwoPlayer():
     player_sprites = pygame.sprite.Group()
     player_sprites.add([player_1,player_2])
 
-    #player_1 = Paddle(10)
-    #player_2 = Paddle(SCREEN_WIDTH - 10)
+    ball.draw(screen)
+    player_1.draw(screen)
+    player_2.draw(screen)
+
     pygame.display.update()
+    pygame.time.wait(2000)
 
     running = True
     scores = {"Right" : 0, "Left" : 0}
@@ -318,16 +242,16 @@ def RunGame(click=False):
         if two_player_button.collidepoint((mx,my)):
             screen.blit(two_player_button_hover,two_player_button)
             if click:
-                RunTwoPlayerSettings()
+                ball_speed,paddle_speed,number_of_games = map(int,RunTwoPlayerSettings())
                 total_scores = {"Right" : 0, "Left" : 0}
-                for i in range(NUMBER_OF_GAMES):
-                    scores = RunTwoPlayer()
+                for i in range(number_of_games):
+                    scores = RunTwoPlayer(ball_speed,paddle_speed,number_of_games)
                     total_scores["Right"] += scores["Right"]
                     total_scores["Left"] += scores["Left"]
-                    if(i == NUMBER_OF_GAMES - 1):
-                        DisplayScores(total_scores,NUMBER_OF_GAMES,final_score=True)
+                    if(i == number_of_games - 1):
+                        DisplayScores(total_scores,number_of_games,final_score=True)
                     else:
-                        DisplayScores(total_scores,NUMBER_OF_GAMES)
+                        DisplayScores(total_scores,number_of_games)
                 RunGame()
         if multiplayer_button.collidepoint((mx,my)):
             screen.blit(multiplayer_button_hover,multiplayer_button)
@@ -342,10 +266,6 @@ def RunGame(click=False):
             if event.type == QUIT:
                 pygame.quit()
                 sys.exit(0)
-            if event.type == KEYDOWN:
-                if event.key == K_ESCAPE:
-                    pygame.quit()
-                    sys.exit(0)
             if event.type == MOUSEBUTTONDOWN:
                 if event.button == 1:
                     click = True
