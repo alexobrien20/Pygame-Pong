@@ -1,10 +1,10 @@
 import pygame
 import random
-import time
 from pygame.locals import *
 from random import randint
 from PongSprites import Paddle, Ball
 from Utilities import text_input_box,draw_text
+import time
 import sys
 
 SCREEN_WIDTH = 800
@@ -14,12 +14,39 @@ number_of_games = 5 #The default number of games if non is picked
 
 clock = pygame.time.Clock()
 
-def DisplayScores(scores,number_of_games,final_score=False):
-    clock.tick(25)
-    number_of_games_text = f'Best of {number_of_games}'
+
+def load_and_blit_image(image_file,SCREEN_WIDTH,SCREEN_HEIGHT):
     screen = pygame.display.set_mode([SCREEN_WIDTH,SCREEN_HEIGHT])
-    background_surface = pygame.image.load("twoplayerbackground.jpg")
+    background_surface = pygame.image.load(image_file)
     screen.blit(background_surface,background_surface.get_rect())
+    return screen
+
+def load_and_blit_menu_button(image_file,x,y,surface):
+    button_image = pygame.image.load(image_file)
+    button = button_image.get_rect()
+    button.center = (x,y)
+    surface.blit(button_image,button)
+    return button
+
+def handle_exit_event(event):
+    ## Each screen has the option to exit the game if the user presses the close button
+    ## Also there is the option to press escape and return to the main menu
+    ## This function just checks whether either of those events occur, this is ran in every game loop
+    if event.type == KEYDOWN:
+        if event.key == K_ESCAPE:
+            running = False
+            RunGame()
+    if event.type == pygame.QUIT:
+        running = False
+        pygame.quit()
+        sys.exit(0)
+    
+
+def DisplayScores(scores,number_of_games,game_number,SCREEN_WIDTH,SCREEN_HEIGHT,clock,final_score=False):
+    clock.tick(25)
+    screen = load_and_blit_image("twoplayerbackground.jpg",SCREEN_WIDTH,SCREEN_HEIGHT)
+
+    number_of_games_text = f'Game {game_number} out of {number_of_games}'
     start_time = time.time()
     end_time = start_time + 5 ##Want the scores to be shown for 10 seconds
     dt = 0
@@ -28,7 +55,7 @@ def DisplayScores(scores,number_of_games,final_score=False):
     player_2_score = scores["Right"]
 
 
-    draw_text(screen,number_of_games_text,110,SCREEN_WIDTH/2,-20)   
+    draw_text(screen,number_of_games_text,90,SCREEN_WIDTH/2,-10)   
 
     pygame.display.update()  
 
@@ -38,14 +65,7 @@ def DisplayScores(scores,number_of_games,final_score=False):
         while running:
             while(start_time < end_time):
                 for event in pygame.event.get():
-                    if event.type == KEYDOWN:
-                        if event.key == K_ESCAPE:
-                            running = False
-                            RunGame()
-                    if event.type == pygame.QUIT:
-                        running = False
-                        pygame.quit()
-                        sys.exit()
+                    handle_exit_event(event)
 
                 draw_text(screen,str(player_1_score),170,SCREEN_WIDTH*0.25,SCREEN_HEIGHT/3)       
                 draw_text(screen,str(player_2_score),170,SCREEN_WIDTH*0.75,SCREEN_HEIGHT/3)    
@@ -57,13 +77,7 @@ def DisplayScores(scores,number_of_games,final_score=False):
     else:
         while running:
             for event in pygame.event.get():
-                if event.type == KEYDOWN:
-                    if event.key == K_ESCAPE:
-                        running = False
-                if event.type == pygame.QUIT:
-                    running = False
-                    pygame.quit()
-                    sys.exit()
+                handle_exit_event(event)
 
             if(player_1_score > player_2_score):
                 winner_text = 'The Winner is Left!'
@@ -112,14 +126,7 @@ def RunTwoPlayerSettings():
         mx,my = pygame.mouse.get_pos()
 
         for event in pygame.event.get():
-            if event.type == KEYDOWN:
-                if event.key == K_ESCAPE:
-                    running = False
-                    RunGame()
-            if event.type == pygame.QUIT:
-                running = False
-                pygame.quit()
-                sys.exit()
+            handle_exit_event(event)
             for button in all_buttons:
                 button.handle_event(event)
             if start_game_button.collidepoint((mx,my)):
@@ -132,7 +139,7 @@ def RunTwoPlayerSettings():
                     if errors[0] == '' and errors[1] == '' and errors[2] == '':
                         return ball_speed_button.user_input,paddle_speed_button.user_input,number_of_games_button.user_input
                     else:
-                        return 5,5,10 ##Returns the default speeds if the user hasn't entered the settings correctly.
+                        return 5,5,5 ##Returns the default speeds if the user hasn't entered the settings correctly.
         screen.blit(start_game_surface,start_game_button)
 
 
@@ -142,9 +149,7 @@ def RunTwoPlayerSettings():
         pygame.display.update()
     
 def RunTwoPlayer(ball_speed_input=5,paddle_speed_input=5,number_of_games_input=5): ##These are the default values if the user dosn't enter the settings correctly
-    screen = pygame.display.set_mode([SCREEN_WIDTH,SCREEN_HEIGHT])
-    background_surface = pygame.image.load("twoplayerbackground.jpg")
-    screen.blit(background_surface,background_surface.get_rect())
+    screen = load_and_blit_image("twoplayerbackground.jpg",SCREEN_WIDTH,SCREEN_HEIGHT)
 
     player_1 = Paddle(10,paddle_speed_input,SCREEN_HEIGHT)
     player_2 = Paddle(SCREEN_WIDTH - 10,paddle_speed_input,SCREEN_HEIGHT)
@@ -171,14 +176,7 @@ def RunTwoPlayer(ball_speed_input=5,paddle_speed_input=5,number_of_games_input=5
         background_surface = pygame.image.load("twoplayerbackground.jpg")
         screen.blit(background_surface,background_surface.get_rect())
         for event in pygame.event.get():
-            if event.type == KEYDOWN:
-                if event.key == K_ESCAPE:
-                    running = False
-                    RunGame()
-            if event.type == pygame.QUIT:
-                running = False
-                pygame.quit()
-                sys.exit()
+            handle_exit_event(event)
 
         ball_direction_y = ball.move(ball_direction_x,ball_direction_y)
         if(pygame.sprite.spritecollideany(ball,player_sprites)):
@@ -202,59 +200,41 @@ def RunTwoPlayer(ball_speed_input=5,paddle_speed_input=5,number_of_games_input=5
 
 def RunGame(click=False):
     pygame.init()
-    screen = pygame.display.set_mode([SCREEN_WIDTH,SCREEN_HEIGHT])
-    background_surface = pygame.image.load("background.jpg")
-    screen.blit(background_surface,background_surface.get_rect())
     clock.tick(25)
+
+    screen = load_and_blit_image("background.jpg",SCREEN_WIDTH,SCREEN_HEIGHT)
+
     running = True
     while running:
 
-        #single_player_button = pygame.Rect(SCREEN_WIDTH/6,200,200,50)
-        single_player_button_image = pygame.image.load('singleplayer.png')
-        single_player_button_hover = pygame.image.load('singleplayerhover.png')
+        single_player_button = load_and_blit_menu_button('singleplayer.png',230,240,screen)
+        two_player_button = load_and_blit_menu_button('twoplayer.png',230,320,screen)
+        multiplayer_button = load_and_blit_menu_button('multiplayer.png',230,400,screen)
 
-        two_player_button_image = pygame.image.load('twoplayer.png')
-        two_player_button_hover = pygame.image.load('twoplayerhover.png')
+        mouse_x_position,mouse_y_position = pygame.mouse.get_pos()
 
-        multiplayer_button_image = pygame.image.load('multiplayer.png')
-        multiplayer_button_hover = pygame.image.load('multiplayerhover.png')
-
-        single_player_button = single_player_button_image.get_rect()
-        single_player_button.center = (230,240)
-
-        two_player_button = two_player_button_image.get_rect()
-        two_player_button.center = (230,320)
-
-        multiplayer_button = multiplayer_button_image.get_rect()
-        multiplayer_button.center = (230,400)
-
-        screen.blit(single_player_button_image,single_player_button)
-        screen.blit(two_player_button_image,two_player_button)
-        screen.blit(multiplayer_button_image,multiplayer_button)
-        mx,my = pygame.mouse.get_pos()
-
-        if single_player_button.collidepoint((mx,my)):
-            screen.blit(single_player_button_hover,single_player_button)
+        if single_player_button.collidepoint((mouse_x_position,mouse_y_position)):
+            load_and_blit_menu_button('singleplayerhover.png',230,240,screen)
             if click:
                 ##Go on to single player
                 print("You selected single player")
                 pass
-        if two_player_button.collidepoint((mx,my)):
-            screen.blit(two_player_button_hover,two_player_button)
+        if two_player_button.collidepoint((mouse_x_position,mouse_y_position)):
+            load_and_blit_menu_button('twoplayerhover.png',230,320,screen)
             if click:
                 ball_speed,paddle_speed,number_of_games = map(int,RunTwoPlayerSettings())
                 total_scores = {"Right" : 0, "Left" : 0}
-                for i in range(number_of_games):
+                for current_game_number in range(number_of_games):
                     scores = RunTwoPlayer(ball_speed,paddle_speed,number_of_games)
                     total_scores["Right"] += scores["Right"]
                     total_scores["Left"] += scores["Left"]
-                    if(i == number_of_games - 1):
-                        DisplayScores(total_scores,number_of_games,final_score=True)
+                    if(current_game_number == number_of_games - 1):
+                        DisplayScores(total_scores,number_of_games,current_game_number+1,SCREEN_WIDTH,SCREEN_HEIGHT,clock,final_score=True)
                     else:
-                        DisplayScores(total_scores,number_of_games)
+                        DisplayScores(total_scores,number_of_games,current_game_number+1,SCREEN_WIDTH,SCREEN_HEIGHT,clock)
                 RunGame()
-        if multiplayer_button.collidepoint((mx,my)):
-            screen.blit(multiplayer_button_hover,multiplayer_button)
+        if multiplayer_button.collidepoint((mouse_x_position,mouse_y_position)):
+            load_and_blit_menu_button('multiplayerhover.png',230,400,screen)
             if click:
                 ##Go on to multiplayer 
                 print("You selected multiplayer")
