@@ -14,7 +14,6 @@ number_of_games = 5 #The default number of games if non is picked
 
 clock = pygame.time.Clock()
 
-
 def load_and_blit_image(image_file,SCREEN_WIDTH,SCREEN_HEIGHT):
     screen = pygame.display.set_mode([SCREEN_WIDTH,SCREEN_HEIGHT])
     background_surface = pygame.image.load(image_file)
@@ -37,11 +36,10 @@ def handle_exit_event(event):
             running = False
             RunGame()
     if event.type == pygame.QUIT:
-        running = False
+        running = Falsegit 
         pygame.quit()
         sys.exit(0)
     
-
 def DisplayScores(scores,number_of_games,game_number,SCREEN_WIDTH,SCREEN_HEIGHT,clock,final_score=False):
     clock.tick(25)
     screen = load_and_blit_image("twoplayerbackground.jpg",SCREEN_WIDTH,SCREEN_HEIGHT)
