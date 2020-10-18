@@ -1,14 +1,23 @@
 import pygame
 from pygame.locals import *
+import sys
 
 def draw_text(surf,text,size,x,y):
+    """
+    A function to quickly draw text onto the a given surface using the Molot font
+    """
     font_name = pygame.font.Font("Molot.ttf",size)
-    text_surface = font_name.render(text,True,(255,0,0))
+    text_surface = font_name.render(text,True,(255,255,255))
     text_rect = text_surface.get_rect()
     text_rect.midtop = (x,y)
     surf.blit(text_surface,text_rect)
 
 class text_input_box:
+    """
+    These are the input boxes that are displayed on the user settings page
+    Each box takes in a integer between 1-99, this input is checked it meets these conditons
+    The values input are then used as settings for the game
+    """
     def __init__(self,x,y,width,height,text,SCREEN_WIDTH,SCREEN_HEIGHT):
         self.SCREEN_WIDTH = SCREEN_WIDTH
         self.SCREEN_HEIGHT = SCREEN_HEIGHT
@@ -27,7 +36,8 @@ class text_input_box:
 
     def check_user_input(self,user_input):
         if len(user_input) > 2 or user_input.isdigit() != True:
-            self.error_message = "Input must be an integer between 1-99!"
+            self.error_message = "Input must be an integer between 1-99"
+            self.user_input = self.user_input[:3]
         else:
             self.error_message = ''
     
@@ -41,7 +51,7 @@ class text_input_box:
         draw_text(screen,self.text,40,self.x + 80, self.y - 75)
         base_font = pygame.font.Font("Molot.ttf",75)
         button_text_surface = base_font.render(self.user_input,True,(255,255,255))
-        screen.blit(button_text_surface,(self.button.x + 20, self.button.y - 5))
+        screen.blit(button_text_surface,(self.button.x + 10, self.button.y - 5))
         pygame.draw.rect(screen,self.colour,self.button,2)
         
     def handle_event(self,event):
