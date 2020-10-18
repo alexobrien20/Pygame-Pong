@@ -2,9 +2,11 @@ import pygame
 from pygame.locals import *
 
 class Paddle(pygame.sprite.Sprite):
-    ### This is the paddle (or the player) than will be controlled by the user
-    ### There are 2 different sides (left and right) and depending on which side is being moved the controlls will be different either up/down or w/s
-    ### The user has the chance to enter the speed of the paddles otherwise a default value of 5 is used.
+    """
+    This is the paddle (or the player) than will be controlled by the user
+    There are 2 different sides (left and right) and depending on which side is being moved the controlls will be different either up/down or w/s
+    The user has the chance to enter the speed of the paddles otherwise a default value of 5 is used.
+    """
     def __init__(self,x,speed,SCREEN_HEIGHT):
         super(Paddle,self).__init__()
         self.SCREEN_HEIGHT = SCREEN_HEIGHT
@@ -37,9 +39,11 @@ class Paddle(pygame.sprite.Sprite):
             self.rect.bottom = self.SCREEN_HEIGHT
 
 class Ball(pygame.sprite.Sprite):
-    ### This is the ball that will be 'hit' around the screen
-    ### The ball starts moving randomly either left or right.
-    ### The user has the chance to enter the speed of the ball otherwise a default value of 5 is used.
+    """ 
+    This is the ball that will be 'hit' around the screen
+    The ball starts moving randomly either left or right.
+    The user has the chance to enter the speed of the ball otherwise a default value of 5 is used.
+    """
     def __init__(self,speed,SCREEN_WIDTH,SCREEN_HEIGHT):
         super(Ball,self).__init__()
         self.SCREEN_WIDTH = SCREEN_WIDTH
