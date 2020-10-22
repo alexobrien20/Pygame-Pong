@@ -8,8 +8,9 @@ import time
 import sys
 import os
 
-path = "C:\\Users\\Alex\\Desktop\\Pygame Pong"
-os.chdir(path)
+abspath = os.path.abspath(__file__)
+dname = os.path.dirname(abspath)
+os.chdir(dname)
 
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
@@ -42,7 +43,7 @@ def handle_exit_event(event):
     
 def DisplayScores(scores,number_of_games,game_number,SCREEN_WIDTH,SCREEN_HEIGHT,clock,final_score=False):
     clock.tick(25)
-    screen = load_and_blit_image("twoplayerbackground.jpg",SCREEN_WIDTH,SCREEN_HEIGHT)
+    screen = load_and_blit_image("images/twoplayerbackground.jpg",SCREEN_WIDTH,SCREEN_HEIGHT)
 
     number_of_games_text = f'Game {game_number} out of {number_of_games}'
     start_time = time.time()
@@ -116,7 +117,7 @@ def RunTwoPlayerSettings():
     running = True
 
     while running:
-        background_surface = pygame.image.load("twoplayerbackground.jpg")
+        background_surface = pygame.image.load("images/twoplayerbackground.jpg")
         screen.blit(background_surface,background_surface.get_rect())
 
         mx,my = pygame.mouse.get_pos()
@@ -145,7 +146,7 @@ def RunTwoPlayerSettings():
         pygame.display.update()
     
 def RunTwoPlayer(ball_speed_input,paddle_speed_input):
-    screen = load_and_blit_image("twoplayerbackground.jpg",SCREEN_WIDTH,SCREEN_HEIGHT)
+    screen = load_and_blit_image("images/twoplayerbackground.jpg",SCREEN_WIDTH,SCREEN_HEIGHT)
 
     player_1 = Paddle(10,paddle_speed_input,SCREEN_HEIGHT)
     player_2 = Paddle(SCREEN_WIDTH - 10,paddle_speed_input,SCREEN_HEIGHT)
@@ -169,7 +170,7 @@ def RunTwoPlayer(ball_speed_input,paddle_speed_input):
     running = True
     scores = {"Right" : 0, "Left" : 0}
     while running:
-        background_surface = pygame.image.load("twoplayerbackground.jpg")
+        background_surface = pygame.image.load("images/twoplayerbackground.jpg")
         screen.blit(background_surface,background_surface.get_rect())
         for event in pygame.event.get():
             handle_exit_event(event)
@@ -198,7 +199,7 @@ def RunGame(click=False):
     pygame.init()
     clock.tick(25)
 
-    screen = load_and_blit_image("newbackground.jpg",SCREEN_WIDTH,SCREEN_HEIGHT)
+    screen = load_and_blit_image("images/newbackground.jpg",SCREEN_WIDTH,SCREEN_HEIGHT)
     base_font = pygame.font.Font("Molot.ttf",75)
 
     running = True
@@ -240,5 +241,3 @@ def RunGame(click=False):
 
 if __name__ == "__main__":
     RunGame()
-
-
