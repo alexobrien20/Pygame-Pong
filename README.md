@@ -1,6 +1,6 @@
 # Pygame-Pong
 
-A 2 player Pong style game created using Pygame in Python 3.7.4
+A basic 2 player Pong style game created using Pygame in Python
 
 # Demo
 
@@ -11,5 +11,7 @@ A 2 player Pong style game created using Pygame in Python 3.7.4
 ```
  pip install pygame
 ```
-
+ Python Version 3.7.4
+ 
+ Pygame Version 1.6.9
 
