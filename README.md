@@ -1,2 +1,2 @@
 # Pygame-Pong
-![gif](Animated GIF-source.gif)
+![gif](pong-gif.gif)
